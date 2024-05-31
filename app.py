@@ -75,8 +75,14 @@ async def hybrid_parsing(url: str) -> dict:
             logging.error(f"Failed to download MP4 HQ. Status code: {response_video_hq.status_code}")
             return None
 
+    except requests.RequestException as e:
+        logging.error(f'HTTP request error: {str(e)}')
+        return None
+    except TypeError as e:
+        logging.error(f'Type error: {str(e)}')
+        return None
     except Exception as e:
-        logging.error(f'An error occurred: {str(e)}')
+        logging.error(f'An unexpected error occurred: {str(e)}')
         return None
 
     return video_stream, video_stream_hq, music, caption, video_hq
