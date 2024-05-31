@@ -23,9 +23,16 @@ async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
 async def custom_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text('This is custom command')
 
+def resolve_short_url(url: str) -> str:
+    try:
+        response = requests.head(url, allow_redirects=True)
+        return response.url
+    except requests.RequestException as e:
+        logging.error(f"Error resolving short URL: {str(e)}")
+        return None
+
 async def hybrid_parsing(url: str) -> dict:
     try:
-        # Hybrid parsing(Douyin/TikTok URL)
         result = await api.hybrid_parsing(url)
 
         if not result or "video_data" not in result or "music" not in result or "desc" not in result:
@@ -75,8 +82,12 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
             return
     elif message_type == 'private':
         if "tiktok.com" in text:
+            resolved_url = resolve_short_url(text)
+            if not resolved_url:
+                await update.message.reply_text("Failed to resolve TikTok URL. Please ensure the URL is correct.")
+                return
 
-            result = await hybrid_parsing(text)
+            result = await hybrid_parsing(resolved_url)
 
             if result:
                 video = result[0]
