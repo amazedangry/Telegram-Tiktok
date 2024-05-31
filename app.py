@@ -11,7 +11,7 @@ logging.getLogger().setLevel(logging.INFO)
 load_dotenv()
 
 api = Scraper()
-token = os.getenv("6290466055:AAF24y53GFr2CnftXBcSJhFX-OY3iE4JS6E")
+token = os.getenv("TOKEN")
 BOT_USERNAME = '@ManukaAI_Bot'
 
 async def start_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
