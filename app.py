@@ -7,7 +7,7 @@ from douyin_tiktok_scraper.scraper import Scraper
 from dotenv import load_dotenv
 import logging
 
-logging.getLogger().setLevel(logging.INFO)
+logging.basicConfig(level=logging.INFO)
 load_dotenv()
 
 api = Scraper()
@@ -26,7 +26,9 @@ async def custom_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
 def resolve_short_url(url: str) -> str:
     try:
         response = requests.head(url, allow_redirects=True)
-        return response.url
+        resolved_url = response.url
+        logging.info(f"Resolved URL: {resolved_url}")
+        return resolved_url
     except requests.RequestException as e:
         logging.error(f"Error resolving short URL: {str(e)}")
         return None
@@ -34,15 +36,20 @@ def resolve_short_url(url: str) -> str:
 async def hybrid_parsing(url: str) -> dict:
     try:
         result = await api.hybrid_parsing(url)
+        logging.info(f"API response: {result}")
 
         if not result or "video_data" not in result or "music" not in result or "desc" not in result:
             logging.error(f"Unexpected result format: {result}")
             return None
 
-        video = result["video_data"]["nwm_video_url_HQ"]
-        video_hq = result["video_data"]["nwm_video_url_HQ"]
-        music = result["music"]["play_url"]["uri"]
-        caption = result["desc"]
+        video = result["video_data"].get("nwm_video_url_HQ")
+        video_hq = result["video_data"].get("nwm_video_url_HQ")
+        music = result["music"].get("play_url", {}).get("uri")
+        caption = result.get("desc")
+
+        if not video or not video_hq or not music or not caption:
+            logging.error("Missing data in the response")
+            return None
 
         logging.info(f"Video URL: {video}")
         logging.info(f"Video_HQ URL: {video_hq}")
