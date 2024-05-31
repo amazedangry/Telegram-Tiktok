@@ -38,7 +38,11 @@ async def hybrid_parsing(url: str) -> dict:
         result = await api.hybrid_parsing(url)
         logging.info(f"API response: {result}")
 
-        if not result or "video_data" not in result or "music" not in result or "desc" not in result:
+        if not result:
+            logging.error("No result returned from hybrid_parsing.")
+            return None
+
+        if "video_data" not in result or "music" not in result or "desc" not in result:
             logging.error(f"Unexpected result format: {result}")
             return None
 
@@ -48,7 +52,7 @@ async def hybrid_parsing(url: str) -> dict:
         caption = result.get("desc")
 
         if not video or not video_hq or not music or not caption:
-            logging.error("Missing data in the response")
+            logging.error(f"Missing data in the response: video={video}, video_hq={video_hq}, music={music}, caption={caption}")
             return None
 
         logging.info(f"Video URL: {video}")
